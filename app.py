@@ -1,36 +1,56 @@
 from flask import Flask, request, jsonify
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import time
+import requests
 
 app = Flask(__name__)
 
-def get_final_url_selenium(url):
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    # Crucial: Spoof a real browser to bypass bot protection
-    chrome_options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36")
+def unmask_link(url):
+    # 1. AUTO-FIX: Add https:// if missing
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
 
-    driver = webdriver.Chrome(options=chrome_options)
     try:
-        driver.get(url)
-        time.sleep(3) # Wait for JS redirect
-        return driver.current_url
-    except:
-        return "Error"
-    finally:
-        driver.quit()
+        # 2. MIMIC BROWSER: Use a real User-Agent to avoid being blocked
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        
+        # 3. USE GET (STREAM): HEAD requests are often blocked. GET with stream=True is safer. 
+        response = requests.get(
+            url, 
+            allow_redirects=True, 
+            timeout=10,  # set a reasonable timeout to avoid hanging
+            headers=headers, 
+            stream=True 
+        )
+        
+        # Close the connection immediately so we don't download the website body
+        response.close()
+        
+        return response.url
+        
+    except requests.exceptions.Timeout:
+        return "Error: Timeout - The website took too long to respond."
+    except requests.exceptions.ConnectionError:
+        return "Error: Connection Refused - The website might be down or blocking us."
+    except requests.exceptions.TooManyRedirects:
+        return "Error: Redirect Loop - The link redirects to itself infinitely."
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @app.route('/expand', methods=['GET'])
 def expand():
-    target_url = request.args.get('url')
-    if not target_url:
-        return jsonify({"error": "No url provided"}), 400
+    url = request.args.get('url')
+    if not url:
+        return jsonify({"error": "Missing url parameter"}), 400
     
-    final_url = get_final_url_selenium(target_url)
-    return jsonify({"original": target_url, "final": final_url})
+    # Run the unmasker
+    final_url = unmask_link(url)
+    
+    return jsonify({
+        "original": url,
+        "final": final_url
+    })
 
 if __name__ == '__main__':
+    # Use a production-ready server argument if needed, but default is fine for Render's Gunicorn
     app.run(host='0.0.0.0', port=10000)
