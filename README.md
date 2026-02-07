@@ -1,57 +1,27 @@
-# 🕵️ link-unmask
+# 🕵️ Link Unmasker
 
 **Because sometimes `HTTP 200 OK` is a lie.**
 
-A lightweight Python API that uses a headless Chrome browser (Selenium) to follow links that use JavaScript redirects, meta-refreshes, or client-side logic to cloak their final destination.
+A high-performance, lightweight API to unmask shortened links (bit.ly, tinyurl, etc.) and reveal their true destination. Built with Python Flask.
 
-Built to be deployed on **Render** (or any Docker-compatible host) and consumed directly by **Google Sheets**.
+## 🚀 Features
+- **Lightweight:** Uses `requests` instead of heavy browsers like Selenium.
+- **Smart Handling:** Auto-fixes missing protocols (`http/s`) and mimics real browser headers.
+- **Fast:** Optimizes connection handling to resolve redirects in milliseconds.
+- **JSON API:** Simple endpoint integration for any application.
 
-## ⚡ The Problem
-Standard HTTP libraries (like Python's `requests` or Google Apps Script's `UrlFetchApp`) only fetch the initial HTML. They cannot execute JavaScript.
-If a link returns a "Loading..." page and then uses `window.location.replace(...)` to redirect you, standard tools will report a success (Status 200) but fail to give you the actual destination URL.
+## ⚡ Usage
 
-## 🛠️ The Solution
-`link-unmask` spins up a headless Chrome instance, visits the URL, waits for the dust to settle (JS execution), and returns the *actual* final URL in the browser address bar.
+**Endpoint:**
+`GET https://<domain>/expand`
 
-### Tech Stack
-* **Python 3.9+**
-* **Flask** (API Server)
-* **Selenium** (Browser Automation)
-* **Docker** (Containerization)
-* **Gunicorn** (Production Server)
+**Parameters:**
+- `url`: The shortened link you want to unmask.
 
-## 🚀 Deployment (Render.com)
-
-This project is Dockerized and ready for [Render](https://render.com).
-
-1.  **Fork/Clone** this repo.
-2.  Create a new **Web Service** on Render.
-3.  Connect your repository.
-4.  Select **Docker** as the Runtime.
-5.  Deploy! 
-
-*Note: The free tier of Render spins down after inactivity, so the first request might take 50s. Subsequent requests will be fast.*
-
-## 💻 Local Development
-
-1.  **Clone the repo:**
-    ```bash
-    git clone [https://github.com/yourusername/link-unmask.git](https://github.com/yourusername/link-unmask.git)
-    cd link-unmask
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-3.  **Run the server:**
-    ```bash
-    python app.py
-    ```
-
-4.  **Test it:**
-    Visit `http://localhost:10000/expand?url=https://outskill.link/wisprflow`
+**Example Request:**
+```bash
+curl "[https://<domain>/expand?url=bit.ly/3gDq9q5](https://<domain>/expand?url=bit.ly/3gDq9q5)"
+```
 
 ## 📊 Google Sheets Integration
 
@@ -71,7 +41,7 @@ Want to use this directly in your spreadsheet?
 function UNMASK_LINK(url) {
   if (!url) return "";
   // REPLACE with your actual Render/Cloudfare URL
-  const apiEndpoint = "[https://<url>/expand](https://<url>/expand)";
+  const apiEndpoint = "[https://<domain>/expand](https://<domain>/expand)";
   try {
     const response = UrlFetchApp.fetch(apiEndpoint + "?url=" + encodeURIComponent(url));
     const json = JSON.parse(response.getContentText());
