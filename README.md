@@ -33,19 +33,30 @@ Want to use this directly in your spreadsheet?
 
 ```javascript
 /**
- * Calls your custom Link Unmask API to resolve redirects.
- * @param {string} url The short link to resolve.
- * @return The final destination URL.
+ * Unmasks a shortened URL using your custom 0x86 API.
+ *
+ * @param {string} url The shortened URL (e.g., "bit.ly/xyz").
+ * @return {string} The unmasked, final destination URL.
  * @customfunction
  */
-function UNMASK_LINK(url) {
+function UNMASK(url) {
+  // 1. Validation: If cell is empty, do nothing
   if (!url) return "";
-  // REPLACE with your actual Render/Cloudfare URL
-  const apiEndpoint = "[https://<domain>/expand](https://<domain>/expand)";
+
+  // 2. Define your API Endpoint
+  const apiEndpoint = "https://<domain>/expand?url=" + encodeURIComponent(url); // link.0x86.me -> custom domain (replacable)
+
   try {
-    const response = UrlFetchApp.fetch(apiEndpoint + "?url=" + encodeURIComponent(url));
+    // 3. Call the API
+    const response = UrlFetchApp.fetch(apiEndpoint, {
+      'muteHttpExceptions': true // Prevents the script from crashing if the API returns 404/500
+    });
+
     const json = JSON.parse(response.getContentText());
-    return json.final;
+
+    // 4. Return the 'final' URL from your JSON response
+    return json.final || "Error: No final link found";
+
   } catch (e) {
     return "Error: " + e.message;
   }
