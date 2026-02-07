@@ -33,7 +33,7 @@ Want to use this directly in your spreadsheet?
 
 ```javascript
 /**
- * Unmasks a shortened URL using your custom 0x86 API.
+ * Unmasks a shortened URL using your custom Link Unmasker API.
  *
  * @param {string} url The shortened URL (e.g., "bit.ly/xyz").
  * @return {string} The unmasked, final destination URL.
@@ -44,7 +44,7 @@ function UNMASK(url) {
   if (!url) return "";
 
   // 2. Define your API Endpoint
-  const apiEndpoint = "https://<domain>/expand?url=" + encodeURIComponent(url); // link.0x86.me -> custom domain (replacable)
+  const apiEndpoint = "https://<domain>/expand?url=" + encodeURIComponent(url);
 
   try {
     // 3. Call the API
