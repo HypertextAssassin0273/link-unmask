@@ -70,13 +70,11 @@ Want to use this directly in your spreadsheet?
  */
 function UNMASK_LINK(url) {
   if (!url) return "";
-  
-  // REPLACE with your actual Render URL
-  var apiEndpoint = "[https://link-unmask.com/expand](https://your-app-name.onrender.com/expand)"; 
-  
+  // REPLACE with your actual Render/Cloudfare URL
+  const apiEndpoint = "[https://<url>/expand](https://<url>/expand)";
   try {
-    var response = UrlFetchApp.fetch(apiEndpoint + "?url=" + encodeURIComponent(url));
-    var json = JSON.parse(response.getContentText());
+    const response = UrlFetchApp.fetch(apiEndpoint + "?url=" + encodeURIComponent(url));
+    const json = JSON.parse(response.getContentText());
     return json.final;
   } catch (e) {
     return "Error: " + e.message;
