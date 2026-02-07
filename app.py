@@ -35,7 +35,7 @@ def unmask_link(url):
     except requests.exceptions.TooManyRedirects:
         return "Error: Redirect Loop - The link redirects to itself infinitely."
     except Exception as e:
-        return f"Error: {str(e)}"
+        return "Error: Request Failed - Unable to process the link."
 
 @app.route('/expand', methods=['GET'])
 def expand():
